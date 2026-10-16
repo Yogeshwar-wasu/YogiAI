@@ -1,0 +1,174 @@
+<div class="app-shell">
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-icon">B</div>
+      <div>
+        <h1>YogiAI</h1>
+        <p>Your friendly desktop reminder</p>
+      </div>
+    </div>
+
+    <button class="secondary" (click)="previewBuddy()">
+      Preview Buddy
+    </button>
+  </header>
+
+  <section class="welcome">
+    <div>
+      <p class="eyebrow">YOUR DAY, MADE EASIER</p>
+      <h2>Small reminders.<br><span>Better routines.</span></h2>
+      <p>Plan your day and let Buddy give you a friendly nudge.</p>
+    </div>
+
+    <div class="buddy-preview" aria-label="Cartoon boy">
+      <div class="character drink" id="character">
+        <img src="/assets/hand_fold.png" class="buddy-boy" alt="Buddy">
+      </div>
+
+      <div class="speech">Hey! I've got your back!</div>
+    </div>
+  </section>
+
+  <section class="stats">
+    <article class="stat">
+      <span>Pending reminders</span>
+      <strong>{{ pendingCount }}</strong>
+    </article>
+    <article class="stat">
+      <span>Completed reminders</span>
+      <strong>{{ completedCount }}</strong>
+    </article>
+    <article class="stat">
+      <span>Storage</span>
+      <strong class="small-value">Local only</strong>
+    </article>
+  </section>
+
+  <main class="columns">
+    <section class="panel">
+      <p class="eyebrow">PLAN AHEAD</p>
+      <h3>Create a reminder</h3>
+
+      <form #reminderForm="ngForm" (ngSubmit)="addReminder(reminderForm)">
+
+        <label for="type">Reminder type</label>
+        <select id="type" name="type" [(ngModel)]="type" required>
+
+          <option value="" disabled>Select reminder type</option>
+          <option value="Meeting">Meeting</option>
+          <option value="Documentation">Documentation</option>
+          <option value="Drink Water">Drink Water</option>
+          <option value="Take a Break">Take a Break</option>
+          <option value="Task">Task</option>
+          <option value="Email">Email</option>
+          <option value="Report Preparation">Report Preparation</option>
+          <option value="Other">Other</option>
+
+        </select>
+
+        <label for="title">Reminder name</label>
+        <input id="title" name="title" [(ngModel)]="title" required maxlength="120"
+          placeholder="e.g. Prepare DSC report">
+
+        <label for="notes">Notes (optional)</label>
+        <textarea id="notes" name="notes" [(ngModel)]="notes" rows="3" maxlength="500"
+          placeholder="Add some details..."></textarea>
+
+        <div class="field-row">
+          <div>
+            <label for="dueAt">Date and time</label>
+            <input id="dueAt" name="dueAt" type="datetime-local" [(ngModel)]="dueAt" required>
+          </div>
+
+          <div>
+            <label for="repeat">Repeat</label>
+            <select id="repeat" name="repeat" [(ngModel)]="repeat">
+              <option value="none">Never</option>
+              <option value="daily">Daily</option>
+              <option value="weekly">Weekly</option>
+            </select>
+          </div>
+        </div>
+
+        <p class="error" *ngIf="error">{{ error }}</p>
+
+        <button class="primary full" type="submit">
+          + Save reminder
+        </button>
+
+        <p class="privacy">
+          🔒 Your reminders stay on this computer.
+        </p>
+      </form>
+    </section>
+
+    <section class="panel">
+      <div class="list-heading">
+        <div>
+          <p class="eyebrow">STAY ON TRACK</p>
+          <h3>Your reminders</h3>
+        </div>
+
+        <select aria-label="Filter reminders" [(ngModel)]="filter" name="filter">
+          <option value="all">All reminders</option>
+          <option value="pending">To do</option>
+          <option value="completed">Completed</option>
+        </select>
+      </div>
+
+      <div *ngIf="filteredReminders.length; else emptyState">
+        <article class="reminder" *ngFor="let reminder of filteredReminders">
+
+          <button class="check" [class.checked]="reminder.status === 'completed'"
+            [disabled]="reminder.status === 'completed'" [attr.aria-label]="'Complete ' + reminder.title"
+            (click)="complete(reminder.id)">✓</button>
+
+          <div class="reminder-content">
+            <h4 *ngIf="reminder.type" class="reminder-type" [class.struck]="reminder.status === 'completed'">
+              {{ reminder.type }}
+            </h4>
+
+            <h4 [class.struck]="reminder.status === 'completed'">
+              {{ reminder.title }}
+            </h4>
+
+            <p class="date">
+              {{ formatDate(reminder.dueAt) }}
+              <span class="tag" *ngIf="reminder.repeat !== 'none'">
+                {{ reminder.repeat }}
+              </span>
+            </p>
+
+            <p class="notes" *ngIf="reminder.notes">
+              {{ reminder.notes }}
+            </p>
+          </div>
+
+          <div class="actions">
+            <button class="icon-button" *ngIf="reminder.status === 'pending'" title="Snooze 5 minutes"
+              (click)="snooze(reminder.id)">⏱</button>
+
+            <button class="icon-button delete" title="Delete reminder" (click)="remove(reminder.id)">×</button>
+          </div>
+        </article>
+      </div>
+
+      <ng-template #emptyState>
+        <div class="empty">
+          <div class="cloud">☁</div>
+          <h4>Nothing on your list yet</h4>
+          <p>Create your first reminder and Buddy will help you remember.</p>
+        </div>
+      </ng-template>
+
+      <p class="footer-note">
+        ● Buddy's reminder engine runs while the app is in the tray.
+      </p>
+    </section>
+  </main>
+
+  <footer>
+    <span>Made for your everyday wins.</span>
+    <button class="link-button" (click)="hideBuddy()">Hide Buddy</button>
+  </footer>
+</div>
