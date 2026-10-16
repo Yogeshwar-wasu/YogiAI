@@ -1,0 +1,38 @@
+{
+  "name": "yogiai",
+  "version": "1.0.0",
+  "private": true,
+  "main": "electron/main.cjs",
+  "scripts": {
+  "start:angular": "npm --prefix frontend start -- --host 127.0.0.1",
+  "start:electron": "wait-on http://127.0.0.1:4200 && electron .",
+  "dev": "concurrently -k \"npm run start:angular\" \"npm run start:electron\"",
+  "build:angular": "npm --prefix frontend run build",
+  "dist": "npm run build:angular && electron-builder"
+},
+  "devDependencies": {
+    "concurrently": "^9.2.0",
+    "electron": "^37.0.0",
+    "electron-builder": "^26.0.0",
+    "wait-on": "^8.0.0"
+  },
+  "build": {
+    "appId": "com.yogiai.reminders",
+    "productName": "YogiAI",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "frontend/dist/**/*",
+      "electron/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": "nsis"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
+  }
+}

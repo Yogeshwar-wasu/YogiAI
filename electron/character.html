@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>YogiAI – Drink Water</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+    }
+
+    body {
+      overflow: hidden;
+      background: transparent;
+      font-family: "Segoe UI", Arial, sans-serif;
+      color: #292546;
+    }
+
+    .scene {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      min-height: 0;
+      overflow: hidden;
+      background: transparent;
+    }
+
+    .buddy {
+      position: absolute;
+      left: 50%;
+      bottom: 0;
+      width: min(280px, 90%);
+      height: 300px;
+      object-fit: contain;
+      object-position: center bottom;
+      transform: translateX(-50%);
+      transform-origin: bottom center;
+      z-index: 2;
+    }
+
+    .buddy.entering {
+      animation:
+        enterCenter 2.3s cubic-bezier(.22, .7, .25, 1) forwards,
+        walkBob .38s ease-in-out infinite;
+    }
+
+    .buddy.standing {
+      left: 50%;
+      transform: translateX(-50%);
+      animation: idle 2s ease-in-out infinite;
+    }
+
+    .buddy.happy {
+      left: 50%;
+      transform: translateX(-50%);
+      animation: happy .55s ease-in-out 2;
+    }
+
+    .buddy.sad {
+      left: 50%;
+      transform: translateX(-50%);
+      animation: sad .55s ease-in-out 2;
+    }
+
+    .buddy.exit-right {
+      animation: leaveRight 2s ease-in forwards;
+    }
+
+    .buddy.exit-left {
+      animation: leaveLeft 2s ease-in forwards;
+    }
+
+    .prompt {
+      position: absolute;
+      left: 50%;
+      top: 8%;
+      transform: translateX(-50%);
+      width: min(85%, 300px);
+      padding: 12px 14px 8px;
+      text-align: center;
+      z-index: 3;
+      opacity: 0;
+      background-color: white;
+      border-radius: 18px;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, .15);
+    }
+
+    .greeting {
+      margin: 0 0 5px;
+      color: #7665b0;
+      font-size: 17px;
+      font-weight: 600;
+    }
+
+    .reminder-title {
+      margin: 0 0 8px;
+      color: #292546;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .notes{
+      margin: 0 0 8px;
+      color: #292546;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .prompt.visible {
+      animation: fadeIn .5s ease forwards;
+    }
+
+    .question {
+      margin: 0 0 12px;
+      color: #625d76;
+      font-size: 15px;
+      font-weight: 500;
+      line-height: 1.4;
+    }
+
+    .username {
+      margin: 4px 0 12px;
+      font-size: clamp(18px, 3vw, 26px);
+      font-weight: 800;
+    }
+
+    .actions {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    button {
+      border: 0;
+      border-radius: 999px;
+      padding: 7px 16px;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 1.2;
+      cursor: pointer;
+      transition: transform .15s ease, filter .15s ease;
+    }
+
+    button:hover:not(:disabled) {
+      transform: translateY(-2px);
+      filter: brightness(.97);
+    }
+
+    button:focus-visible {
+      outline: 3px solid #7665b0;
+      outline-offset: 3px;
+    }
+
+    button:disabled {
+      cursor: default;
+      opacity: .7;
+    }
+
+    .yes {
+      background: #25a875;
+      color: white;
+    }
+
+    .no {
+      background: #eee9ff;
+      color: #51417e;
+    }
+
+    .message {
+      margin: 6px 0 0;
+      color: #51417e;
+      font-size: 13px;
+      font-weight: 600;
+      min-height: 0;
+    }
+
+    .prompt.answered .actions {
+      display: none;
+    }
+
+    .prompt.answered {
+      animation: none;
+      opacity: 1;
+    }
+
+    @keyframes enterCenter {
+      from {
+        left: 0;
+        transform: translateX(-120%);
+      }
+
+      to {
+        left: 50%;
+        transform: translateX(-50%);
+      }
+    }
+
+    @keyframes walkBob {
+
+      0%,
+      100% {
+        margin-bottom: 0;
+      }
+
+      50% {
+        margin-bottom: 5px;
+      }
+    }
+
+    @keyframes idle {
+
+      0%,
+      100% {
+        transform: translateX(-50%) translateY(0) rotate(-1deg);
+      }
+
+      50% {
+        transform: translateX(-50%) translateY(-5px) rotate(1deg);
+      }
+    }
+
+    @keyframes happy {
+
+      0%,
+      100% {
+        transform: translateX(-50%) translateY(0) scale(1);
+      }
+
+      50% {
+        transform: translateX(-50%) translateY(-15px) scale(1.06);
+      }
+    }
+
+    @keyframes sad {
+
+      0%,
+      100% {
+        transform: translateX(-50%) translateY(0) rotate(0);
+      }
+
+      50% {
+        transform: translateX(-50%) translateY(3px) rotate(-5deg);
+      }
+    }
+
+    @keyframes leaveRight {
+      from {
+        left: 50%;
+        transform: translateX(-50%);
+      }
+
+      to {
+        left: 120%;
+        transform: translateX(0);
+      }
+    }
+
+    @keyframes leaveLeft {
+      from {
+        left: 50%;
+        transform: translateX(-50%);
+      }
+
+      to {
+        left: -30%;
+        transform: translateX(-100%);
+      }
+    }
+
+    @keyframes fadeIn {
+      to {
+        opacity: 1;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+
+      .buddy,
+      .prompt {
+        animation-duration: .01ms !important;
+        animation-delay: 0s !important;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="scene" aria-label="Buddy water reminder">
+    <img id="buddy" class="buddy" src="assets/buddy-walk.png" alt="Buddy cartoon boy walking">
+    <section id="prompt" class="prompt" aria-live="polite">
+      <p id="username" class="greeting">Hi! Yogesh 👋</p>
+      <p id="title" class="reminder-title">Meeting Reminder</p>
+      <p id="notes" class="notes">Notes</p>
+      <p id="question" class="question">Did you drink water?</p>
+      <div class="actions" id="actions">
+        <button type="button" class="yes" id="yesButton">Yes</button>
+        <button type="button" class="no" id="noButton">No</button>
+      </div>
+      <div id="message" class="message"></div>
+    </section>
+  </main>
+
+  <script>
+    (() => {
+      "use strict";
+
+      const buddy = document.getElementById("buddy");
+      const prompt = document.getElementById("prompt");
+      const username = document.getElementById("username");
+      const question = document.getElementById("question");
+      const message = document.getElementById("message");
+      const yesButton = document.getElementById("yesButton");
+      const noButton = document.getElementById("noButton");
+      const actions = document.getElementById("actions");
+
+      const images = {
+        walkFrames: [
+          "assets/buddy-walk.png",
+          "assets/waking_2.png",
+          "assets/waking_3.png",
+          "assets/waking_4.png"
+        ],
+      };
+
+      const reminderConfigs = {
+        "Meeting": {
+          question: "It's time for your meeting! Are you ready?",
+          normal: "assets/buddy-meeting.png",
+          happy: "assets/meeting-happy.png",
+          sad: "assets/meeting-sad.png"
+        },
+        "Documentation": {
+          question: "Time to work on your documentation!",
+          normal: "assets/buddy-documentation.png",
+          happy: "assets/documentation-happy.png",
+          sad: "assets/documentation-sad.png"
+        },
+        "Drink Water": {
+          question: "Did you drink water?",
+          normal: "assets/holding-bottle.png",
+          happy: "assets/water-happy.png",
+          sad: "assets/water-sad.png"
+        },
+        "Take a Break": {
+          question: "You've been working hard! Time for a break.",
+          normal: "assets/buddy-break.png",
+          happy: "assets/break-happy.png",
+          sad: "assets/break-sad.png"
+        },
+        "Task": {
+          question: "It's time to complete your task. Let's do it!",
+          normal: "assets/buddy-task.png",
+          happy: "assets/task-happy.png",
+          sad: "assets/task-sad.png"
+        },
+        "Email": {
+          question: "Time to check or reply to your emails!",
+          normal: "assets/buddy-email.png",
+          happy: "assets/email-happy.png",
+          sad: "assets/email-sad.png"
+        },
+        "Report Preparation": {
+          question: "Time to prepare your report. You've got this!",
+          normal: "assets/buddy-report.png",
+          happy: "assets/report-happy.png",
+          sad: "assets/report-sad.png"
+        },
+        "Other": {
+          question: "Hey Yogesh! It's time for your reminder.",
+          normal: "assets/buddy-other.png",
+          happy: "assets/other-happy.png",
+          sad: "assets/other-sad.png"
+        },
+        "": {
+          question: "Hey Yogesh! It's time for your reminder.",
+          normal: "assets/buddy-other.png",
+          happy: "assets/other-happy.png",
+          sad: "assets/other-sad.png"
+        }
+      };
+
+      let activeReminder = { type: "Drink Water" };
+      let answered = false;
+      let exitTimer = null;
+      let walkFrameTimer = null;
+      let walkFrameIndex = 0;
+
+      function getConfig(reminder) {
+        return reminderConfigs[reminder?.type] || reminderConfigs["Other"];
+      }
+
+      function setBuddyImage(src) {
+        buddy.src = src;
+      }
+
+      function stopWalkingFrames() {
+        if (walkFrameTimer !== null) {
+          clearInterval(walkFrameTimer);
+          walkFrameTimer = null;
+        }
+      }
+
+      function startWalkingFrames() {
+        stopWalkingFrames();
+        walkFrameIndex = 0;
+        setBuddyImage(images.walkFrames[0]);
+
+        walkFrameTimer = setInterval(() => {
+          if (!buddy.classList.contains("entering")) {
+            stopWalkingFrames();
+            return;
+          }
+          walkFrameIndex = (walkFrameIndex + 1) % images.walkFrames.length;
+          setBuddyImage(images.walkFrames[walkFrameIndex]);
+        }, 140);
+      }
+
+      buddy.addEventListener("animationend", (event) => {
+        if (event.animationName !== "enterCenter") return;
+
+        stopWalkingFrames();
+        buddy.classList.remove("entering");
+        buddy.style.left = "50%";
+        const config = getConfig(activeReminder);
+        setBuddyImage(config.normal);
+        buddy.classList.add("standing");
+        prompt.classList.add("visible");
+      });
+
+      function answer(isYes) {
+        if (answered) return;
+        answered = true;
+
+        actions.style.display = 'none';
+        yesButton.disabled = true;
+        noButton.disabled = true;
+
+        buddy.classList.remove(
+          "entering", "standing", "happy", "sad", "exit-right", "exit-left"
+        );
+        const config = getConfig(activeReminder);
+
+        if (isYes) {
+          setBuddyImage(config.happy || images.happy);
+          buddy.classList.add("happy");
+          question.textContent = "Yay! Great job! 🎉";
+          message.textContent = "Buddy is happy you completed your reminder!";
+
+          if (typeof window.characterApi?.answer === "function") {
+            // Keep the existing preload API argument format.
+            window.characterApi.answer("yes", null);
+          }
+
+          exitTimer = setTimeout(() => {
+            buddy.classList.remove("happy");
+            buddy.classList.add("exit-right");
+          }, 1100);
+        } else {
+          setBuddyImage(config.sad || images.sad);
+          buddy.classList.add("sad");
+          question.textContent = "That's okay! 💜";
+          message.textContent = "Don't worry! You can try again soon.";
+
+          if (typeof window.characterApi?.answer === "function") {
+            window.characterApi.answer("no", null);
+          }
+
+          exitTimer = setTimeout(() => {
+            buddy.classList.remove("sad");
+            buddy.classList.add("exit-left");
+          }, 1100);
+        }
+      }
+
+      buddy.addEventListener("error", () => {
+        // Do not replace a missing happy/sad image with a generic image.
+        // Check the filename and spelling in the assets folder if this appears.
+        console.error("Buddy image could not be loaded:", buddy.src);
+      });
+
+      yesButton.addEventListener("click", () => answer(true));
+      noButton.addEventListener("click", () => answer(false));
+
+      function resetBuddy(reminder) {
+        if (exitTimer !== null) {
+          clearTimeout(exitTimer);
+          exitTimer = null;
+        }
+        stopWalkingFrames();
+
+        // Electron must pass the reminder object to this callback.
+        // If it passes no object, use Drink Water only as the preview default.
+        activeReminder = reminder && typeof reminder === "object"
+          ? reminder
+          : { type: "Drink Water" };
+
+        const config = getConfig(activeReminder);
+        answered = false;
+
+        prompt.classList.remove("answered", "visible");
+        prompt.style.opacity = "0";
+        actions.style.display = "flex";
+        yesButton.disabled = false;
+        noButton.disabled = false;
+
+        username.textContent = "Hi! Yogesh 👋";
+        title.textContent = reminder.title;
+        notes.textContent = reminder.notes;
+        question.textContent = config.question;
+        message.textContent = "";
+
+        buddy.className = "buddy";
+        buddy.style.left = "0";
+        buddy.style.right = "auto";
+        buddy.style.transform = "translateX(-120%)";
+
+        void buddy.offsetWidth;
+        buddy.classList.add("entering");
+        startWalkingFrames();
+      }
+
+      // Listen for the full reminder object sent from Electron.
+      if (typeof window.characterApi?.onReminder === "function") {
+        window.characterApi.onReminder((reminder) => resetBuddy(reminder));
+      }
+
+      if (typeof window.characterApi?.onDemo === "function") {
+        window.characterApi.onDemo(() => resetBuddy({ type: "Drink Water" }));
+      }
+
+      // Initial preview. Real reminder events should replace this type.
+      resetBuddy({ type: "Drink Water" });
+    })();
+  </script>
+</body>
+
+</html>
