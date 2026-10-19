@@ -1,3 +1,5 @@
+<img width="1354" height="1173" alt="UI" src="https://github.com/user-attachments/assets/8a732842-460e-4285-91d3-95d3307a4696" />
+
 # YogiAI – Smart Desktop Reminder App
 
 YogiAI is a desktop productivity application developed using Angular and Electron. It combines task and reminder management with an interactive virtual buddy to make daily routines more organized, engaging, and enjoyable.
