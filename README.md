@@ -75,6 +75,10 @@ npm run dist
 The packaged application and installer are configured to be generated in the `release` directory.
 
 ## Project Goal
+<img width="1366" height="768" alt="Capture 3" src="https://github.com/user-attachments/assets/4e4b176a-121e-4dbc-a24b-c0a84b7e5f0d" />
+<img width="1366" height="768" alt="Capture yes" src="https://github.com/user-attachments/assets/23d5f04f-7424-4fb1-bff0-c44bd201073d" />
+<img width="1366" height="768" alt="Capture no" src="https://github.com/user-attachments/assets/85fe83fa-7be4-464d-b643-a52a047f7199" />
+
 
 YogiAI aims to make daily productivity and healthy habits easier to maintain through convenient reminders, desktop integration, and an interactive virtual buddy.
 
